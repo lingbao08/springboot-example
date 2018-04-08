@@ -1,0 +1,14 @@
+spring:
+#数据源的配置#
+  datasource:
+  #主读副写
+    primary:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/db1?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: root
+      password: root
+    secondary:
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/db2?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: root
+      password: root
