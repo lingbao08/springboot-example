@@ -8,3 +8,5 @@ It's a project within springboot ，for example:es、hive、impala、hbase。
 springcloud的基本跨服务访问也会加入的。
 
 **实现进度：** 1%。
+
+hhhhhh，终于要在git上面写项目了。。。万事始于足下。。
