@@ -1,7 +1,5 @@
 package com.example.demo.utils;
 
-
-
 import com.example.base.common.CommonException;
 import com.example.base.common.CommonPage;
 import com.example.base.utils.CommonUtil;
