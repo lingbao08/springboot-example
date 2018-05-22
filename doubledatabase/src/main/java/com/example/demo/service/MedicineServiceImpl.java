@@ -22,4 +22,9 @@ public class MedicineServiceImpl implements MedicineService {
         Medicine medicine = medicineReadRepository.findById(id).orElse(null);
         return medicine;
     }
+
+    @Override
+    public Medicine add(Medicine medicine) {
+        return medicineWriteRepository.save(medicine);
+    }
 }

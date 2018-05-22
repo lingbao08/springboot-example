@@ -8,4 +8,6 @@ import com.example.demo.entity.Medicine;
 public interface MedicineService {
 
     Medicine findById(Long id);
+
+    Medicine add(Medicine medicine);
 }

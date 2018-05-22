@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(
         entityManagerFactoryRef="entityManagerFactorySecondary",
         transactionManagerRef="transactionManagerSecondary",
-        basePackages= {"com.example.demo.*.repository.write"}) //设置Repository所在位置
+        basePackages= {"com.example.demo.repository.write"}) //设置Repository所在位置
 
 public class PrimaryConfig {
 
