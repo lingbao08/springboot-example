@@ -11,6 +11,7 @@
 
 
     <modules>
+        <module>base</module>
         <module>doubledatabase</module>
         <module>elasticsearch</module>
         <module>hbase</module>
