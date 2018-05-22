@@ -20,7 +20,7 @@ public class ESServiceImpl {
     @Autowired
     private ESUtil esUtil;
 
-    public  void main(String[] args) throws CommonException {
+    public  void test() throws CommonException {
         List<ESSearchDto> list1 = new ArrayList<>();
         //设置查询条件和查询字段，并塞入查询的list中
         ESSearchDto esSearchDto = new ESSearchDto();
@@ -29,5 +29,7 @@ public class ESServiceImpl {
         list1.add(esSearchDto);
 
         List<Map<String, String>> list = esUtil.queryAllListByFields("test01", list1, null);
+
+        System.out.println(list);
     }
 }
