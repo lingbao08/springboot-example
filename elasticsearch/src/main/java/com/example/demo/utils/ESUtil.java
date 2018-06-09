@@ -18,6 +18,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -79,7 +80,9 @@ public class ESUtil {
     public <T> boolean indexOne(String indexName, String typeName, T t) throws CommonException {
         try {
             checkNullIndex(indexName);
-            IndexResponse response = this.esClient.prepareIndex(indexName, typeName)
+            String routing = String.valueOf(10%3);//此处举例，具体视业务
+            esClient.admin().indices().prepareForceMerge(indexName).setOnlyExpungeDeletes(true).get();
+            IndexResponse response = this.esClient.prepareIndex(indexName, typeName).setRouting(routing)
                     .setSource(objectMapper.writeValueAsBytes(t), XContentType.JSON).get();
             if (response.status() == RestStatus.CREATED) {
                 //创建成功
@@ -111,8 +114,9 @@ public class ESUtil {
             BulkRequestBuilder bulkRequestBuilder = this.esClient.prepareBulk();
 
             for (T t : list) {
+                String routing = String.valueOf(10%3);//此处举例，具体视业务
                 IndexRequestBuilder indexRequestBuilder = esClient.prepareIndex(indexName, typeName)
-                        .setSource(objectMapper.writeValueAsBytes(t), XContentType.JSON);
+                        .setSource(objectMapper.writeValueAsBytes(t), XContentType.JSON).setRouting(routing);
                 bulkRequestBuilder.add(indexRequestBuilder);
             }
 
@@ -227,7 +231,6 @@ public class ESUtil {
             throw new CommonException(msg);
         }
 
-
     }
 
     /**
@@ -302,7 +305,7 @@ public class ESUtil {
      *
      * @param indexName  索引名称,nust in
      * @param conditions 条件,should in
-     * @param sort       见{buildSort}方法
+     * @param sort       见@{buildSort}方法
      * @return
      */
     public <T> List<T> queryAllListByFields(String indexName, List<ESSearchDto> conditions, SortBuilder sort, Class clazz) throws CommonException {
@@ -398,6 +401,42 @@ public class ESUtil {
             throw new CommonException(msg);
         }
     }
+
+    /**
+     * 根据指定的条件查询并返回list，以游标的方式
+     * 返回指定字段
+     *
+     * @param indexName  索引名称,nust in
+     * @param params     指定字段,must in
+     * @param conditions 条件,should in
+     * @param sort       见{buildSort}方法
+     * @return
+     */
+    public List<Map<String, String>> queryListByFieldsWithScroll(String indexName, List<String> params, List<ESSearchDto> conditions, SortBuilder sort) throws CommonException {
+        try {
+            checkNullIndex(indexName);
+            if (CollectionUtils.isEmpty(params)) {
+                LOGGER_ERROR.error("指定字段不能为空！");
+                throw new CommonException("指定字段不能为空！");
+            }
+
+            String[] shows = params.toArray(new String[params.size()]);
+            SearchRequestBuilder srb = esClient.prepareSearch(indexName)
+                    .setFetchSource(shows, null).addSort(defaultScoreSort())
+                    .setScroll(new TimeValue(60000));//查询内容存活时间 1min
+            if (null != sort)
+                srb = srb.addSort(sort);
+
+            SearchResponse response = srb.setQuery(builderQueries(conditions)).execute().actionGet();
+            return mapperResultToMap(response.getHits());
+        } catch (Exception e) {
+            String msg = "查询列表错误（游标），索引为：" + indexName;
+            LOGGER_ERROR.error(msg, e);
+            throw new CommonException(msg);
+        }
+    }
+
+
 
 
     /**

@@ -1,1 +1,18 @@
-spring.data.elasticsearch.highlight.tags: <strong>
+spring:
+  data:
+    elasticsearch:
+      cluster-name: elasticsearch
+      highlight:
+        tags: <strong>
+#        如果没有写端口。默认为9300
+      addresses: 0.0.0.0,127.0.0.1
+
+#数据源的配置#
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/db1?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: root
+
+
+
