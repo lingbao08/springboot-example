@@ -1,0 +1,53 @@
+{
+  "settings": {
+    //分片数
+    "number_of_replicas": 1,
+    //主片数
+    "number_of_shards": 1,
+    "index.store.type": "niofs",
+    "index.query.default_field": "title",
+    "index.unassigned.node_left.delayed_timeout": "5m"
+  },
+  "mappings": {
+    "drgDictionary": {
+      //固定结构
+      "dynamic": "strict",
+      //关闭all
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        //不分析的字段，用于聚合
+        "esId": {
+          "type": "text",
+          "index": "not_analyzed"
+        },
+        "entryId": {
+          "type": "long"
+        },
+        "title": {
+          "type": "text",
+          "index": "analyzed",
+          "analyzer": "ik_smart",
+          "search_analyzer": "ik_smart",
+          "fields": {
+            "raw": {
+              //当title字段需要作为keyword进行查询时，使用title.raw字段；而title字段用于全文检索时使用。
+              //raw并没有特殊的含义，自己定义，官网定义的raw，此处挪用
+              "type": "keyword"
+            }
+          }
+        },
+        "entryType": {
+          "type": "keyword"
+        },
+        "content": {
+          "type": "text",
+          "index": "analyzed",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart"
+        }
+      }
+    }
+  }
+}

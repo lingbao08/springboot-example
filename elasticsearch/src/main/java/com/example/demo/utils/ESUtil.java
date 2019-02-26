@@ -81,7 +81,9 @@ public class ESUtil {
         try {
             checkNullIndex(indexName);
             String routing = String.valueOf(10%3);//此处举例，具体视业务
+            //先插入，后合并到副本上去
             esClient.admin().indices().prepareForceMerge(indexName).setOnlyExpungeDeletes(true).get();
+            //设置路由
             IndexResponse response = this.esClient.prepareIndex(indexName, typeName).setRouting(routing)
                     .setSource(objectMapper.writeValueAsBytes(t), XContentType.JSON).get();
             if (response.status() == RestStatus.CREATED) {
@@ -112,7 +114,7 @@ public class ESUtil {
             if (CollectionUtils.isEmpty(list)) return false;
 
             BulkRequestBuilder bulkRequestBuilder = this.esClient.prepareBulk();
-
+            //遍历加入，最后执行
             for (T t : list) {
                 String routing = String.valueOf(10%3);//此处举例，具体视业务
                 IndexRequestBuilder indexRequestBuilder = esClient.prepareIndex(indexName, typeName)
@@ -172,10 +174,11 @@ public class ESUtil {
             BulkByScrollResponse response = DeleteByQueryAction.INSTANCE
                     .newRequestBuilder(esClient).source(indexName)
                     .filter(builderQueries(conditions)).get();
+            LOGGER.info("本次删除条件数据ES的响应为: " + response);
             return true;
         } catch (Exception e) {
-            LOGGER_ERROR.error("插入单条ES数据失败！index：%s", indexName);
-            throw new CommonException("插入单条ES数据失败！");
+            LOGGER_ERROR.error("删除条件数据ES数据失败！index：%s", indexName);
+            throw new CommonException("删除条件数据ES数据失败！");
         }
     }
 
@@ -192,7 +195,7 @@ public class ESUtil {
                     .newRequestBuilder(esClient).source(indexName).get();
             return true;
         } catch (Exception e) {
-            LOGGER_ERROR.error("插入单条ES数据失败！index：%s", indexName);
+            LOGGER_ERROR.error("删除所有数据ES数据失败！index：%s", indexName);
             return false;
         }
     }
@@ -250,7 +253,7 @@ public class ESUtil {
             if (null != sort)
                 srb = srb.addSort(sort);
 
-            SearchResponse response = null;
+            SearchResponse response;
             if (CollectionUtils.isEmpty(conditions))
                 response = srb.execute().actionGet();
             else
@@ -750,6 +753,7 @@ public class ESUtil {
             switch (type) {
                 case MATCH:
                     //对于带有任意中文的字符串都是按照中文匹配规则来算
+                    //wildcardQuery，通配符查询。这个查询执行是非常慢的，慎用。
                     QueryBuilder mWildcardQuery = QueryBuilders
                             .wildcardQuery(field, wildcardQueryStr(value));
                     boolQueryBuilder.should(mWildcardQuery);
